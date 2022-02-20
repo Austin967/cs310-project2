@@ -23,18 +23,54 @@ public class Database {
     public String getSectionsAsJSON(int termid, String subjectid, String num) {
         
         String result = null;
+        ResultSet resultset = null;
+        try{
+            
+            
         
-        // INSERT YOUR CODE HERE
-        
+            // INSERT YOUR CODE HERE
+            
+            String query = "SELECT * FROM section WHERE termid = ? AND subjectid = ? AND num = ?";
+            PreparedStatement pstmt = connection.prepareStatement(query);
+            pstmt.setInt(1, termid);
+            pstmt.setString(2, subjectid);
+            pstmt.setString(3, num);
+            
+            boolean hasresults = pstmt.execute();
+            
+            if(hasresults){
+                resultset = pstmt.getResultSet();
+            }
+            result = getResultSetAsJSON(resultset);
+            pstmt.close();
+            
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+        }
         return result;
-        
     }
     
     public int register(int studentid, int termid, int crn) {
         
         int result = 0;
         
-        // INSERT YOUR CODE HERE
+        
+        try{
+            String query = "INSERT INTO registration (studentid, termid, crn) VALUES (?, ?, ?)";
+            PreparedStatement pstmt = connection.prepareStatement(query);
+            pstmt.setInt(1, studentid);
+            pstmt.setInt(2, termid);
+            pstmt.setInt(3, crn);
+            
+            result = pstmt.executeUpdate();
+            pstmt.close();
+            
+            
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+        }
         
         return result;
         
@@ -43,8 +79,23 @@ public class Database {
     public int drop(int studentid, int termid, int crn) {
         
         int result = 0;
+        ResultSet resultset = null;
         
-        // INSERT YOUR CODE HERE
+        try{
+            String query = "DELETE FROM registration WHERE studentid = ? AND termid = ? AND crn = ?";
+            PreparedStatement pstmt = connection.prepareStatement(query);
+            pstmt.setInt(1, studentid);
+            pstmt.setInt(2, termid);
+            pstmt.setInt(3, crn);
+            
+            result = pstmt.executeUpdate();
+            
+            pstmt.close();
+            
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+        }
         
         return result;
         
@@ -53,19 +104,53 @@ public class Database {
     public int withdraw(int studentid, int termid) {
         
         int result = 0;
+        ResultSet resultset = null;
         
-        // INSERT YOUR CODE HERE
-        
+        try {
+            
+            String query = "DELETE FROM registration";
+            PreparedStatement pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            
+            result = pstmt.executeUpdate();
+            
+            
+            
+            
+            return result;
+        } 
+        catch (Exception e) { 
+            e.printStackTrace(); 
+        }
+           
         return result;
-        
     }
     
     public String getScheduleAsJSON(int studentid, int termid) {
         
         String result = null;
+        ResultSet resultset = null;
+        try{
+            
         
-        // INSERT YOUR CODE HERE
-        
+            String query = "SELECT * FROM registration JOIN section ON registration.crn = section.crn WHERE studentid = ? AND registration.termid = ?";
+                PreparedStatement pstmt = connection.prepareStatement(query);
+                pstmt.setInt(1, studentid);
+                pstmt.setInt(2, termid);
+
+                boolean hasresults = pstmt.execute();
+
+                if(hasresults){
+                    resultset = pstmt.getResultSet();
+                    
+                }
+
+                result = getResultSetAsJSON(resultset);
+                
+                pstmt.close();
+        }
+        catch (Exception e) { 
+            e.printStackTrace(); 
+        }
         return result;
         
     }
@@ -130,7 +215,7 @@ public class Database {
         
             try {
 
-                String url = "jdbc:mysql://" + a + "/jsu_sp22_v1?autoReconnect=true&useSSL=false&zeroDateTimeBehavior=CONVERT_TO_NULL&serverTimezone=America/Chicago";
+                String url = "jdbc:mysql://" + a + "/jsu_sp22_v1?autoReconnect=true&useSSL=false&zeroDateTimeBehavior=EXCEPTION&serverTimezone=America/Chicago";
                 // System.err.println("Connecting to " + url + " ...");
 
                 c = DriverManager.getConnection(url, u, p);
